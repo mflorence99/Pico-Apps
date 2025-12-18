@@ -2,12 +2,18 @@ package main
 
 import (
 	"machine"
+	"pico-apps/lib/utils"
 	"time"
 )
 
 func main() {
-	led := machine.LED
+	utils.WaitForSerial()
+
+	led := machine.GP15
 	led.Configure(machine.PinConfig{Mode: machine.PinOutput})
+
+	println("Blinky is ready!")
+
 	for {
 		led.Low()
 		time.Sleep(time.Millisecond * 500)

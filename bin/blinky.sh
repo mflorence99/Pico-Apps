@@ -1,1 +1,1 @@
-(cd ../src/blinky && tinygo build -target=pico -o ../../bin/blinky.uf2)
+(cd ../src/blinky && tinygo build -tags debug -target=pico -o ../../bin/blinky.uf2)
