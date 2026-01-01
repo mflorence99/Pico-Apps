@@ -9,8 +9,9 @@ import (
 
 // 🟧 Wait for the serial port to be opened for debugging
 
-func WaitForSerial() {
+func WaitForSerial(msg string) {
 	for !machine.Serial.DTR() {
 		time.Sleep(100 * time.Millisecond)
 	}
+	println(msg)
 }

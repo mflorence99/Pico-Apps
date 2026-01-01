@@ -77,9 +77,7 @@ var image = []byte{
 }
 
 func main() {
-	utils.WaitForSerial()
-
-	println("Bitmap is ready!")
+	utils.WaitForSerial("Bitmap is ready!")
 
 	led := machine.LED
 	led.Configure(machine.PinConfig{Mode: machine.PinOutput})

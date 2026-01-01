@@ -26,9 +26,7 @@ func show(display *ssd1306.Device, animation Animation, repeat int) {
 }
 
 func main() {
-	utils.WaitForSerial()
-
-	println("Animation is ready!")
+	utils.WaitForSerial("Animation is ready!")
 
 	machine.I2C0.Configure(machine.I2CConfig{SDA: machine.GP0, SCL: machine.GP1, Frequency: 400 * machine.KHz})
 

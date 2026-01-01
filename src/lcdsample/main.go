@@ -10,9 +10,7 @@ import (
 )
 
 func main() {
-	utils.WaitForSerial()
-
-	println("LCD Sample is ready!")
+	utils.WaitForSerial("LCD Sample is ready!")
 
 	machine.I2C0.Configure(
 		machine.I2CConfig{

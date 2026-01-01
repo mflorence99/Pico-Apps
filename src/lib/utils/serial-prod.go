@@ -2,5 +2,5 @@
 
 package utils
 
-func WaitForSerial() {
+func WaitForSerial(_ string) {
 }
