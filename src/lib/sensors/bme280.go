@@ -25,7 +25,7 @@ func NewBME280(i2c *machine.I2C) *BME280 {
 func (b *BME280) MustReadTemperature() float64 {
 	temp, err := b.sensor.ReadTemperature()
 	if err != nil {
-		panic("🔥" + err.Error())
+		panic(err.Error())
 	}
 	return (float64(temp) * 1.8 / 1000) + 32
 }
@@ -33,7 +33,7 @@ func (b *BME280) MustReadTemperature() float64 {
 func (b *BME280) MustReadPressure() float64 {
 	pressure, err := b.sensor.ReadPressure()
 	if err != nil {
-		panic("🔥" + err.Error())
+		panic(err.Error())
 	}
 	return float64(pressure) * 0.02953 / 100000
 }
@@ -41,7 +41,7 @@ func (b *BME280) MustReadPressure() float64 {
 func (b *BME280) MustReadHumidity() float64 {
 	humidity, err := b.sensor.ReadHumidity()
 	if err != nil {
-		panic("🔥" + err.Error())
+		panic(err.Error())
 	}
 	return float64(humidity) / 100
 }
@@ -53,7 +53,7 @@ func (b *BME280) MustReadHumidity() float64 {
 func (b *BME280) MustReadElevation() float64 {
 	elevation, err := b.sensor.ReadAltitude()
 	if err != nil {
-		panic("🔥" + err.Error())
+		panic(err.Error())
 	}
 	return float64(elevation) * 3.28084
 }

@@ -2,10 +2,9 @@ package main
 
 import (
 	"machine"
+	"pico-apps/lib/displays"
 	"pico-apps/lib/utils"
 	"time"
-
-	"tinygo.org/x/drivers/ssd1306"
 )
 
 // https://javl.github.io/image2cpp/
@@ -76,38 +75,40 @@ var image = []byte{
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 }
 
+var (
+	ledRed    = machine.GPIO0
+	ledYellow = machine.GPIO1
+	ledGreen  = machine.GPIO2
+	button    = machine.GPIO22
+	sda       = machine.GPIO18
+	scl       = machine.GPIO19
+)
+
 func main() {
-	utils.WaitForSerial("Bitmap is ready!")
+	defer func() { utils.RecoverFromPanic(recover()) }()
 
-	led := machine.LED
-	led.Configure(machine.PinConfig{Mode: machine.PinOutput})
+	utils.WaitForSerial("😊 Bitmap is ready!")
+	utils.BlinkLEDWhileAlive(ledYellow, time.Millisecond*500)
+	utils.BOOTSELOnButtonPress(button)
 
-	machine.I2C0.Configure(machine.I2CConfig{SDA: machine.GP0, SCL: machine.GP1, Frequency: 400 * machine.KHz})
+	machine.I2C1.Configure(
+		machine.I2CConfig{
+			SDA:       sda,
+			SCL:       scl,
+			Frequency: 400 * machine.KHz,
+		},
+	)
 
-	println("I2C configured")
+	// 🔥 who knows why?
+	time.Sleep(time.Second)
 
-	time.Sleep(time.Second * 1)
-	display := ssd1306.NewI2C(machine.I2C0)
-	display.Configure(ssd1306.Config{Width: 128, Height: 64, Address: ssd1306.Address_128_32, VccState: ssd1306.SWITCHCAPVCC})
+	ssd1306 := displays.NewSSD1306(machine.I2C1)
 
-	println("Display configured")
-
-	display.ClearBuffer()
-	display.ClearDisplay()
-
-	err := display.SetBuffer(image)
-	if err != nil {
-		println(err)
-	}
-
-	display.Display()
+	ssd1306.MustSetBuffer(image)
+	ssd1306.Display()
 
 	for {
-		led.Low()
-		time.Sleep(time.Millisecond * 500)
-
-		led.High()
-		time.Sleep(time.Millisecond * 500)
+		time.Sleep(2 * time.Second)
 	}
 
 }

@@ -46,6 +46,13 @@ func (d *SSD1306) Display() {
 	d.display.Display()
 }
 
+func (d *SSD1306) MustSetBuffer(buffer []byte) {
+	err := d.display.SetBuffer(buffer)
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
 func (d *SSD1306) Size() (int16, int16) {
 	return d.display.Size()
 }

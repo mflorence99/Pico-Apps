@@ -12,37 +12,43 @@ import (
 	"tinygo.org/x/tinyfont/freesans"
 )
 
-var fontData = &freemono.Regular9pt7b
-var fontTitle = &freesans.Regular9pt7b
+var (
+	fontData  = &freemono.Regular9pt7b
+	fontTitle = &freesans.Regular9pt7b
+)
+
+var (
+	ledRed    = machine.GPIO0
+	ledYellow = machine.GPIO1
+	ledGreen  = machine.GPIO2
+	button    = machine.GPIO22
+	sda       = machine.GPIO18
+	scl       = machine.GPIO19
+)
 
 func main() {
 	defer func() { utils.RecoverFromPanic(recover()) }()
 
+	for _, led := range []machine.Pin{ledRed, ledYellow, ledGreen} {
+		led.Configure(machine.PinConfig{Mode: machine.PinOutput})
+	}
+
 	utils.WaitForSerial("😊 BME280 weather is ready")
-	utils.BlinkLEDWhileAlive(machine.GPIO2, time.Millisecond*500)
-	utils.BOOTSELOnButtonPress(machine.GPIO22)
+	utils.BlinkLEDWhileAlive(ledGreen, time.Millisecond*500)
+	utils.BOOTSELOnButtonPress(button)
 
-	// 👇 we'll use this for the display
-	machine.I2C0.Configure(
-		machine.I2CConfig{
-			SDA:       machine.GPIO16,
-			SCL:       machine.GPIO17,
-			Frequency: 400 * machine.KHz,
-		},
-	)
-
-	// 👇 and this for the sensor
 	machine.I2C1.Configure(
 		machine.I2CConfig{
-			SDA: machine.GPIO18,
-			SCL: machine.GPIO19,
+			SDA:       sda,
+			SCL:       scl,
+			Frequency: 400 * machine.KHz,
 		},
 	)
 
 	// 🔥 who knows why?
 	time.Sleep(time.Second)
 
-	ssd1306 := displays.NewSSD1306(machine.I2C0)
+	ssd1306 := displays.NewSSD1306(machine.I2C1)
 	bme280 := sensors.NewBME280(machine.I2C1)
 
 	for {
@@ -52,11 +58,18 @@ func main() {
 		lh := h / 4
 
 		ssd1306.CenterText(fontTitle, 0, lh*0, w, lh, "Weather", utils.Yellow)
-		temp := strconv.FormatFloat(bme280.MustReadTemperature(), 'f', 2, 64)
-		ssd1306.CenterText(fontData, 0, lh*1, w, lh, temp+"F", utils.Blue)
-		pressure := strconv.FormatFloat(bme280.MustReadPressure(), 'f', 2, 64)
+
+		raw := bme280.MustReadTemperature()
+		ledRed.Set(raw > 78.5) // 👈 just a hack test
+		temperature := strconv.FormatFloat(raw, 'f', 2, 64)
+		ssd1306.CenterText(fontData, 0, lh*1, w, lh, temperature+"F", utils.Blue)
+
+		raw = bme280.MustReadPressure()
+		pressure := strconv.FormatFloat(raw, 'f', 2, 64)
 		ssd1306.CenterText(fontData, 0, lh*2, w, lh, pressure+"\"", utils.Blue)
-		humidity := strconv.FormatFloat(bme280.MustReadHumidity(), 'f', 2, 64)
+
+		raw = bme280.MustReadHumidity()
+		humidity := strconv.FormatFloat(raw, 'f', 2, 64)
 		ssd1306.CenterText(fontData, 0, lh*3, w, lh, humidity+"%", utils.Blue)
 
 		ssd1306.Display()
