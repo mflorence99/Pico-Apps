@@ -3,35 +3,40 @@ package main
 import (
 	"fmt"
 	"machine"
+	"pico-apps/lib/displays"
 	"pico-apps/lib/utils"
 	"time"
+)
 
-	"tinygo.org/x/drivers/hd44780i2c"
+var (
+	ledRed    = machine.GPIO0
+	ledYellow = machine.GPIO1
+	ledGreen  = machine.GPIO2
+	button    = machine.GPIO22
+	sda       = machine.GPIO18
+	scl       = machine.GPIO19
 )
 
 func main() {
-	utils.WaitForSerial("LCD Sample is ready!")
+	defer func() { utils.RecoverFromPanic(recover()) }()
 
-	machine.I2C0.Configure(
+	utils.WaitForSerial("😊 LCD is ready!")
+	utils.BlinkLEDWhileAlive(ledRed, time.Millisecond*500)
+	utils.BOOTSELOnButtonPress(button)
+
+	machine.I2C1.Configure(
 		machine.I2CConfig{
-			SDA:       machine.GP0,
-			SCL:       machine.GP1,
+			SDA:       machine.GPIO18,
+			SCL:       machine.GPIO19,
 			Frequency: 400 * machine.KHz,
 		},
 	)
 
-	lcd := hd44780i2c.New(machine.I2C0, 0x27)
-
-	lcd.Configure(hd44780i2c.Config{
-		Width:       16, // required
-		Height:      2,  // required
-		CursorOn:    true,
-		CursorBlink: true,
-	})
+	hd44780 := displays.NewHD44780(machine.I2C1, 0x27)
 
 	for ix := 0; ; ix++ {
-		lcd.ClearDisplay()
-		lcd.Print([]byte(fmt.Sprintf(" Hello, Mark!\n  LCD Test #%d", ix%1000)))
+		hd44780.Clear()
+		hd44780.Display(fmt.Sprintf(" Hello, Mark!\n  LCD Test #%d", ix%1000))
 		time.Sleep(time.Millisecond * 100)
 	}
 }

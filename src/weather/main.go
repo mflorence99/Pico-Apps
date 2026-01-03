@@ -48,6 +48,7 @@ func main() {
 	// 🔥 who knows why?
 	time.Sleep(time.Second)
 
+	hd44780 := displays.NewHD44780(machine.I2C1, 0x27)
 	ssd1306 := displays.NewSSD1306(machine.I2C1)
 	bme280 := sensors.NewBME280(machine.I2C1)
 
@@ -73,6 +74,9 @@ func main() {
 		ssd1306.CenterText(fontData, 0, lh*3, w, lh, humidity+"%", utils.Blue)
 
 		ssd1306.Display()
+
+		hd44780.Clear()
+		hd44780.Display("Temp...." + temperature + "F\n" + pressure + "\"   " + humidity + "%")
 
 		time.Sleep(2 * time.Second)
 	}
